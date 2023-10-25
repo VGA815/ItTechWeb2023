@@ -1,0 +1,52 @@
+version: '3.4'
+
+networks:
+  ittech-dev:
+    driver: bridge
+
+services:
+  ittechserver:
+    container_name: ittechserver
+    image: ${DOCKER_REGISTRY-}ittechserver
+    build:
+      context: .
+      dockerfile: ItTechServer/Dockerfile
+    ports:
+        - 5000:80
+    networks:
+        - ittech-dev
+    depends_on:
+        - postgres_db
+    environment:
+        - ConnectionStrings__DefaultConnection=User ID=postgres;Password=vga815;Server=postgres_db;Port=5432;Database=it_tech; IntegratedSecurity=true;Pooling=true;
+
+            
+  ittechclient:
+    container_name: ittechclient
+    image: ittechclient
+    build:
+        context: /ittech-client
+        dockerfile: Dockerfile
+    networks:
+        - ittech-dev
+
+  proxy:
+    container_name: proxy
+    image: nginx:mainline    
+    networks:
+        - ittech-dev
+    restart: always
+  postgres_db:
+      container_name: postgres_db
+      image: postgres:latest
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: vga815
+        POSTGRES_DATABASE: postgres_db
+        POSTGRES_USER: postgres
+      ports:
+        - 5432:5432
+      networks:
+        - ittech-dev
+volumes:
+   postgres-data:
