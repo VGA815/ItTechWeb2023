@@ -20,9 +20,8 @@ namespace ItTechServer.Controllers
             db = context;
         }
         [HttpPost]
-        public async Task<IActionResult> Login(string jsonLoginData)
+        public async Task<IActionResult> Login(UserModel loginData)
         {
-            var loginData = JsonSerializer.Deserialize<UserModel>(jsonLoginData);
             UserModel? user = db.Users.ToList().FirstOrDefault(u =>u.Email == loginData.Email && u.Password == loginData.Password);
             if (user is null) return Unauthorized();
 

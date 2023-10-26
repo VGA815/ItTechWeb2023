@@ -29,7 +29,16 @@ namespace ItTechServer.Controllers
                     return StatusCode(401);
                 }
             }
-            db.Users.Add(JsonSerializer.Deserialize<UserModel>(jsonModel));
+            var usr = JsonSerializer.Deserialize<UserModel>(jsonModel);
+            foreach (var company in db.Companies)
+            {
+                if (usr.Company.Name == company.Name)
+                {
+                    usr.Company = company;
+                    company.Users.Add(usr.Email);
+                }
+            }            
+            db.Users.Add(usr);
             await db.SaveChangesAsync();
             return StatusCode(201);
         }
@@ -38,10 +47,10 @@ namespace ItTechServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            return Json(db.Users.ToList());
+            return Json(db.Users.Include(u => u.Company).ToList());
         }
 
-        [Authorize]
+        [Authorize(Roles = "admin")]
         [HttpDelete]
         public async Task<IActionResult> DeleteUser(int? id)
         {
